@@ -1,8 +1,10 @@
+mod consts;
 mod engine;
 mod render;
 mod tsu;
-mod consts;
+
 use engine::Engine;
+use tsu::hex_to_floats;
 
 fn main() {
     let engine: Engine = Engine::init();

@@ -12,7 +12,7 @@ pub struct Engine {
     video_subsistem: VideoSubsystem,
     window: Window,
     render_context: GLContext,
-    renderer: Renderer
+    renderer: Renderer,
 }
 
 impl Engine {
@@ -28,14 +28,13 @@ impl Engine {
             video_subsistem,
             window,
             render_context,
-            renderer: Renderer::init()
+            renderer: Renderer::init(),
         }
     }
 
     pub fn run_loop(self) {
         let mut event_pump = self.sdl_context.event_pump().unwrap();
         'running: loop {
-
             self.renderer.render_frame();
 
             self.window.gl_swap_window();
