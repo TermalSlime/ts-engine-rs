@@ -1,7 +1,6 @@
 use crate::render::render::Renderer;
 use sdl3::event::Event;
 use sdl3::keyboard::Keycode;
-use sdl3::sys::timer::SDL_GetTicks;
 use sdl3::video::{GLContext, GLProfile, Window};
 use sdl3::Sdl;
 use sdl3::VideoSubsystem;

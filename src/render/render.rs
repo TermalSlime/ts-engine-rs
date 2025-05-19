@@ -4,9 +4,9 @@ use crate::tsu;
 //use gl::types::*;
 use gl::*;
 use std::ffi::c_void;
-use sdl3::{sys::timer::SDL_GetTicks, Sdl};
+use sdl3::sys::timer::SDL_GetTicks;
 
-use super::shaders::{self, FragmentShader, ShaderAttribute, ShaderProgram, VertexShader};
+use super::shaders::{ShaderAttribute, ShaderProgram};
 
 const VERTS: [f32; 21] = [
     -0.5, -0.5, 0.0,  0.6, 0.3, 0.7, 1.0,
@@ -15,6 +15,11 @@ const VERTS: [f32; 21] = [
 ];
 const INDICES: [u32; 3] = [
     0, 1, 2
+];
+const TEX_COORDS: [f32; 6] = [
+    0.0, 0.0,
+    1.0, 0.0,
+    0.5, 1.0
 ];
 
 pub struct Renderer {
@@ -36,13 +41,7 @@ impl Renderer {
         let ebo = EBO::init();
         ebo.put_data(&INDICES.to_vec(), STATIC_DRAW);
 
-        let vshader =
-            VertexShader::compile(shaders::EXM_VSHADER).expect("could not compile vertex shader");
-        let fshader = FragmentShader::compile(shaders::EXM_FSHADER)
-            .expect("could not compile fragment shader");
-
-        let mut program =
-            ShaderProgram::link_program(&vshader, &fshader).expect("could not ling program");
+        let mut program = ShaderProgram::quick_load("/default");
 
         let pos_attr = ShaderAttribute {
             name: "aPos".to_string(),
@@ -59,7 +58,6 @@ impl Renderer {
 
         program.add_shader_attribute(pos_attr);
         program.add_shader_attribute(col_attr);
-        program.apply_shader_attributes();
         program.bind_frag_data_location("FragColor".to_string());
 
         Renderer {
@@ -91,7 +89,6 @@ impl Renderer {
             DrawElements(TRIANGLES, INDICES.len() as i32, UNSIGNED_INT, 0 as *const c_void);
 
             self.frames += 1;
-
         }
     }
 }
