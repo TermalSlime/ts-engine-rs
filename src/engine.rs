@@ -1,6 +1,7 @@
 use crate::render::render::Renderer;
 use sdl3::event::Event;
 use sdl3::keyboard::Keycode;
+use sdl3::sys::timer::SDL_GetTicks;
 use sdl3::video::{GLContext, GLProfile, Window};
 use sdl3::Sdl;
 use sdl3::VideoSubsystem;
@@ -32,10 +33,10 @@ impl Engine {
         }
     }
 
-    pub fn run_loop(self) {
+    pub fn run_loop(mut self) {
         let mut event_pump = self.sdl_context.event_pump().unwrap();
         'running: loop {
-            self.renderer.render_frame();
+            self.renderer.render();
 
             self.window.gl_swap_window();
 

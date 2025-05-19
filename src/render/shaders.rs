@@ -1,12 +1,13 @@
 use gl::types::*;
 use gl::*;
+use std::str;
 
 use std::{
-    ffi::{c_void, CString},
-    mem, ptr, str,
+    collections::HashMap, ffi::{c_void, CString}, mem, ptr
 };
 
-pub const EXM_VSHADER: &str = "#version 330 core
+pub const EXM_VSHADER: &str =
+"#version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec4 aCol;
 
@@ -18,14 +19,21 @@ gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 vCol = aCol;
 }";
 
-pub const EXM_FSHADER: &str = "#version 330 core
+pub const EXM_FSHADER: &str =
+"#version 330 core
+#define PI 3.1415926538
 out vec4 FragColor;
 
 in vec4 vCol;
 
+uniform float time;
+
 void main()
 {
-FragColor = vCol;
+float red = (sin(time) / 2.0f) + 0.5f;
+float gre = (sin(time + PI * 2 * 0.33) / 2.0f) + 0.5f;
+float blu = (sin(time + PI * 2 * 0.66) / 2.0f) + 0.5f;
+FragColor = vec4(red, gre, blu, vCol.a);
 }";
 
 pub struct VertexShader {
@@ -59,6 +67,9 @@ impl VertexShader {
                     ptr::null_mut(),
                     buf.as_mut_ptr() as *mut GLchar,
                 );
+
+                let log = String::from_utf8(buf).expect("unable to decode shader log");
+                println!("{:?}", log);
 
                 return None;
             }
@@ -100,6 +111,9 @@ impl FragmentShader {
                     buf.as_mut_ptr() as *mut GLchar,
                 );
 
+                let log = String::from_utf8(buf).expect("unable to decode shader log");
+                println!("{:?}", log);
+
                 return None;
             }
         }
@@ -115,16 +129,10 @@ pub struct ShaderAttribute {
     pub normalized: bool,
 }
 
-pub struct UniformAttribute {
-    pub name: String,
-    pub type_: GLenum,
-}
-
 #[derive(Default)]
 pub struct ShaderProgram {
     pub ptr: u32,
     pub attributes: Vec<ShaderAttribute>,
-    pub uniforms: Vec<UniformAttribute>,
 }
 
 impl ShaderProgram {
@@ -165,6 +173,12 @@ impl ShaderProgram {
         }
     }
 
+    pub fn bind_frag_data_location(&self, name: String) {
+        unsafe {
+            BindFragDataLocation(self.ptr, 0, CString::new(name).unwrap().as_ptr());
+        }
+    }
+
     pub fn add_shader_attribute(&mut self, shader_attribute: ShaderAttribute) {
         self.attributes.push(shader_attribute);
     }
@@ -198,9 +212,9 @@ impl ShaderProgram {
         }
     }
 
-    pub fn bind_frag_data_location(&self, name: String) {
+    pub fn get_uniform_location(&self, name: String) -> i32{
         unsafe {
-            BindFragDataLocation(self.ptr, 0, CString::new(name).unwrap().as_ptr());
+            GetUniformLocation(self.ptr, CString::new(name).unwrap().as_ptr())
         }
     }
 }

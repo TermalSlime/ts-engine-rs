@@ -1,9 +1,10 @@
-use crate::consts::{self, COOL_COLOR};
+//use crate::consts::*;
+use crate::render::buffers::*;
 use crate::tsu;
-use gl::types::*;
+//use gl::types::*;
 use gl::*;
 use std::ffi::c_void;
-use std::mem::{size_of, transmute};
+use sdl3::{sys::timer::SDL_GetTicks, Sdl};
 
 use super::shaders::{self, FragmentShader, ShaderAttribute, ShaderProgram, VertexShader};
 
@@ -16,110 +17,8 @@ const INDICES: [u32; 3] = [
     0, 1, 2
 ];
 
-struct VBO {
-    ptr: u32,
-}
-
-struct VAO {
-    ptr: u32,
-}
-
-struct EBO {
-    ptr: u32
-}
-
-impl VBO {
-    fn init() -> VBO {
-        unsafe {
-            let mut ptr = 0;
-            GenBuffers(1, &mut ptr);
-            VBO { ptr }
-        }
-    }
-    fn bind(&self) {
-        unsafe {
-            BindBuffer(ARRAY_BUFFER, self.ptr);
-        }
-    }
-    fn put_data(&self, data: &Vec<f32>, usage: GLenum) {
-        self.bind();
-        unsafe {
-            BufferData(
-                ARRAY_BUFFER,
-                (data.len() * size_of::<GLfloat>()) as GLsizeiptr,
-                transmute(&data[0]),
-                usage,
-            );
-        }
-    }
-}
-
-impl Drop for VBO {
-    fn drop(&mut self) {
-        unsafe {
-            DeleteBuffers(1, self.ptr as *const u32);
-        }
-    }
-}
-
-impl VAO {
-    fn init() -> VAO {
-        unsafe {
-            let mut ptr = 0;
-            GenVertexArrays(1, &mut ptr);
-            VAO { ptr }
-        }
-    }
-    fn bind(&self) {
-        unsafe {
-            BindVertexArray(self.ptr);
-        }
-    }
-}
-
-impl Drop for VAO {
-    fn drop(&mut self) {
-        unsafe {
-            DeleteVertexArrays(1, self.ptr as *const u32);
-        }
-    }
-}
-
-impl EBO {
-    fn init() -> EBO {
-        unsafe {
-            let mut ptr = 0;
-            GenBuffers(1, &mut ptr);
-            EBO { ptr }
-        }
-    }
-    fn bind(&self) {
-        unsafe {
-            BindBuffer(ELEMENT_ARRAY_BUFFER, self.ptr);
-        }
-    }
-    fn put_data(&self, data: &Vec<u32>, usage: GLenum) {
-        self.bind();
-        unsafe {
-            BufferData(
-                ELEMENT_ARRAY_BUFFER,
-                (data.len() * size_of::<GLuint>()) as GLsizeiptr,
-                transmute(&data[0]),
-                usage,
-            );
-        }
-    }
-}
-
-impl Drop for EBO {
-    fn drop(&mut self) {
-        unsafe {
-            DeleteBuffers(1, self.ptr as *const u32);
-        }
-    }
-}
-
 pub struct Renderer {
+    frames: u128,
     vao: VAO,
     vbo: VBO,
     ebo: EBO,
@@ -164,6 +63,7 @@ impl Renderer {
         program.bind_frag_data_location("FragColor".to_string());
 
         Renderer {
+            frames: 0,
             vao,
             vbo,
             ebo,
@@ -171,16 +71,27 @@ impl Renderer {
         }
     }
 
-    pub fn render_frame(&self) {
+    pub fn render(&mut self) {
         unsafe {
+            let time = SDL_GetTicks() as f32 / 1000 as f32;
+            //println!("{time}");
+
             let (r, g, b, a) = tsu::hex_to_floats(0xffffffff);
             ClearColor(r, g, b, a);
             Clear(COLOR_BUFFER_BIT);
 
+            let time_loc = self.program.get_uniform_location("time".to_string());
+
             self.program.use_program();
             self.program.apply_shader_attributes();
             self.vao.bind();
+
+            Uniform1f(time_loc, time);
+
             DrawElements(TRIANGLES, INDICES.len() as i32, UNSIGNED_INT, 0 as *const c_void);
+
+            self.frames += 1;
+
         }
     }
 }

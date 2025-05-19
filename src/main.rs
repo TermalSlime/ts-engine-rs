@@ -7,7 +7,7 @@ use engine::Engine;
 use tsu::hex_to_floats;
 
 fn main() {
-    let engine: Engine = Engine::init();
+    let mut engine: Engine = Engine::init();
 
     engine.run_loop();
 }
