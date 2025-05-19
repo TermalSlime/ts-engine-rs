@@ -6,17 +6,25 @@ use std::{ffi::{c_void, CString}, mem, ptr, str};
 pub const EXM_VSHADER: &str =
 "#version 330 core
 layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec4 aCol;
+
+out vec4 vCol;
+
 void main()
 {
 gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+vCol = aCol;
 }";
 
 pub const EXM_FSHADER: &str =
 "#version 330 core
 out vec4 FragColor;
+
+in vec4 vCol;
+
 void main()
 {
-FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+FragColor = vCol;
 }";
 
 pub struct VertexShader
@@ -178,7 +186,7 @@ impl ShaderProgram
             size += (attr.size as usize * get_mem_size_of_gl_type(attr.type_)) as i32;
         }
 
-        let /*mut*/ offset = 0;
+        let mut offset = 0;
 
         for attr in &self.attributes
         {
@@ -192,10 +200,11 @@ impl ShaderProgram
                     FLOAT,
                     attr.normalized as GLboolean,
                     size,
-                    (offset as usize * mem::size_of::<GLfloat>()) as *const c_void
+                    offset as *const c_void
                 );
                 // stride is size of one memory block (xyzrgb|xyzrgb|...) = 6
                 // pointer is offset in one memory block (|xyz|rgbxyzrgb) = 0, (xyz|rgb|xyzrgb) = 3
+                offset += (attr.size as usize * get_mem_size_of_gl_type(attr.type_)) as i32
             }
         }
     }

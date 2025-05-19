@@ -2,13 +2,14 @@ use gl::*;
 use gl::types::*;
 use std::mem::{size_of, transmute};
 use crate::tsu;
+use crate::consts::COOL_COLOR;
 
 use super::shaders::{self, FragmentShader, ShaderAttribute, ShaderProgram, VertexShader};
 
-const VERTS: [f32; 9] = [
-    -0.5, -0.5, 0.0,
-     0.5, -0.5, 0.0,
-     0.0,  0.5, 0.0
+const VERTS: [f32; 21] = [
+    -0.5, -0.5, 0.0,  0.6, 0.3, 0.7, 1.0,
+     0.5, -0.5, 0.0,  0.6, 0.3, 0.7, 1.0,
+     0.0,  0.5, 0.0,  0.4, 0.3, 0.8, 1.0,
 ];
 
 struct VBO {
@@ -104,8 +105,16 @@ impl Renderer {
             size: 3,
             normalized: false
         };
+        let col_attr = ShaderAttribute {
+            name: "aCol".to_string(),
+            type_: FLOAT,
+            size: 4,
+            normalized: false
+        };
 
         program.add_shader_attribute(pos_attr);
+        program.add_shader_attribute(col_attr);
+        program.apply_shader_attributes();
         program.bind_frag_data_location("FragColor".to_string());
 
         Renderer {
@@ -118,7 +127,7 @@ impl Renderer {
     pub fn render_frame(&self) {
         unsafe
         {
-            let (r, g, b, a) = tsu::hex_to_floats(0x715affff);
+            let (r, g, b, a) = tsu::hex_to_floats(0xffffffff);
             ClearColor(r, g, b, a);
             Clear(COLOR_BUFFER_BIT);
 
