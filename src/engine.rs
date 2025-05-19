@@ -1,4 +1,4 @@
-use crate::render::render::Renderer;
+use crate::render::render::*;
 use sdl3::event::Event;
 use sdl3::keyboard::Keycode;
 use sdl3::video::{GLContext, GLProfile, Window};
@@ -23,12 +23,14 @@ impl Engine {
         let window = Self::create_window(&video_subsistem);
         let render_context = Self::init_opengl(&video_subsistem, &window);
 
+        let renderer = Renderer::init();
+
         Engine {
             sdl_context,
             video_subsistem,
             window,
             render_context,
-            renderer: Renderer::init(),
+            renderer,
         }
     }
 

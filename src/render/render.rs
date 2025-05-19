@@ -7,19 +7,16 @@ use std::ffi::c_void;
 use sdl3::sys::timer::SDL_GetTicks;
 
 use super::shaders::{ShaderAttribute, ShaderProgram};
+use super::textures::Texture;
 
-const VERTS: [f32; 21] = [
-    -0.5, -0.5, 0.0,  0.6, 0.3, 0.7, 1.0,
-     0.5, -0.5, 0.0,  0.6, 0.3, 0.7, 1.0,
-     0.0,  0.5, 0.0,  0.4, 0.3, 0.8, 1.0,
+const VERTS: [f32; 36] = [
+     0.5,  0.5, 0.0,   1.0, 0.0, 0.0, 1.0,   1.0, 0.0,
+     0.5, -0.5, 0.0,   0.0, 1.0, 0.0, 1.0,   1.0, 1.0,
+    -0.5, -0.5, 0.0,   0.0, 0.0, 1.0, 1.0,   0.0, 1.0,
+    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0, 1.0,   0.0, 0.0
 ];
-const INDICES: [u32; 3] = [
-    0, 1, 2
-];
-const TEX_COORDS: [f32; 6] = [
-    0.0, 0.0,
-    1.0, 0.0,
-    0.5, 1.0
+const INDICES: [u32; 6] = [
+    0, 1, 2, 2, 0, 3
 ];
 
 pub struct Renderer {
@@ -28,6 +25,7 @@ pub struct Renderer {
     vbo: VBO,
     ebo: EBO,
     program: ShaderProgram,
+    texture: Texture
 }
 
 impl Renderer {
@@ -55,17 +53,27 @@ impl Renderer {
             size: 4,
             normalized: false,
         };
+        let uv_attr = ShaderAttribute {
+            name: "aUV".to_string(),
+            type_: FLOAT,
+            size: 2,
+            normalized: false,
+        };
 
         program.add_shader_attribute(pos_attr);
         program.add_shader_attribute(col_attr);
+        program.add_shader_attribute(uv_attr);
         program.bind_frag_data_location("FragColor".to_string());
+
+        let texture = Texture::load("/ayame", REPEAT, LINEAR);
 
         Renderer {
             frames: 0,
             vao,
             vbo,
             ebo,
-            program
+            program,
+            texture
         }
     }
 
@@ -74,7 +82,7 @@ impl Renderer {
             let time = SDL_GetTicks() as f32 / 1000 as f32;
             //println!("{time}");
 
-            let (r, g, b, a) = tsu::hex_to_floats(0xffffffff);
+            let (r, g, b, a) = tsu::hex_to_floats(0xaaaaaaaa);
             ClearColor(r, g, b, a);
             Clear(COLOR_BUFFER_BIT);
 
@@ -82,6 +90,7 @@ impl Renderer {
 
             self.program.use_program();
             self.program.apply_shader_attributes();
+            self.texture.bind();
             self.vao.bind();
 
             Uniform1f(time_loc, time);
@@ -90,5 +99,12 @@ impl Renderer {
 
             self.frames += 1;
         }
+    }
+}
+
+pub fn print_err() {
+    unsafe {
+        let err = GetError();
+        println!("err: {:?}", err);
     }
 }

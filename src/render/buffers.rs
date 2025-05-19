@@ -44,7 +44,7 @@ impl VBO {
 impl Drop for VBO {
     fn drop(&mut self) {
         unsafe {
-            DeleteBuffers(1, self.ptr as *const u32);
+            DeleteBuffers(1, [self.ptr].as_ptr());
         }
     }
 }
@@ -67,7 +67,7 @@ impl VAO {
 impl Drop for VAO {
     fn drop(&mut self) {
         unsafe {
-            DeleteVertexArrays(1, self.ptr as *const u32);
+            DeleteVertexArrays(1, [self.ptr].as_ptr());
         }
     }
 }
@@ -101,7 +101,7 @@ impl EBO {
 impl Drop for EBO {
     fn drop(&mut self) {
         unsafe {
-            DeleteBuffers(1, self.ptr as *const u32);
+            DeleteBuffers(1, [self.ptr].as_ptr());
         }
     }
 }

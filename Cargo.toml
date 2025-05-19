@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 gl = "0.14.0"
-image = "0.25.6"
 sdl3 = { version = "0", features = [] }
+stb_image_rust = "2.27.2"
