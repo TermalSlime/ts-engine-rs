@@ -10,8 +10,8 @@ uniform sampler2D ourTexture;
 
 void main()
 {
-float red = (sin(time) / 2.0f) + 0.5f;
-float gre = (sin(time + PI * 2 * 0.33) / 2.0f) + 0.5f;
-float blu = (sin(time + PI * 2 * 0.66) / 2.0f) + 0.5f;
-FragColor = texture(ourTexture, uv) * vec4(red, gre, blu, vCol.a);
+    float red = (sin(time) / 2.0f) + 0.5f;
+    float gre = (sin(time + PI * 2 * 0.33) / 2.0f) + 0.5f;
+    float blu = (sin(time + PI * 2 * 0.66) / 2.0f) + 0.5f;
+    FragColor = texture(ourTexture, uv) * vec4(red, gre, blu, vCol.a);
 }

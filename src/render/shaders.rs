@@ -188,6 +188,7 @@ impl ShaderProgram {
             unsafe {
                 let attr_ptr =
                     GetAttribLocation(self.ptr, CString::new(attr.name.clone()).unwrap().as_ptr());
+
                 EnableVertexAttribArray(attr_ptr as GLuint);
                 VertexAttribPointer(
                     attr_ptr as GLuint,

@@ -1,110 +1,73 @@
+extern crate nalgebra_glm as glm;
+
+use crate::engine::Engine;
 //use crate::consts::*;
-use crate::render::buffers::*;
 use crate::tsu;
 //use gl::types::*;
 use gl::*;
-use std::ffi::c_void;
-use sdl3::sys::timer::SDL_GetTicks;
 
-use super::shaders::{ShaderAttribute, ShaderProgram};
-use super::textures::Texture;
+use super::model::{Mesh, Model};
+use super::shaders::ShaderProgram;
+use super::texture::Texture;
 
-const VERTS: [f32; 36] = [
-     0.5,  0.5, 0.0,   1.0, 0.0, 0.0, 1.0,   1.0, 0.0,
-     0.5, -0.5, 0.0,   0.0, 1.0, 0.0, 1.0,   1.0, 1.0,
-    -0.5, -0.5, 0.0,   0.0, 0.0, 1.0, 1.0,   0.0, 1.0,
-    -0.5,  0.5, 0.0,   1.0, 1.0, 0.0, 1.0,   0.0, 0.0
+const VERTS: [f32; 12] = [
+     0.5,  0.5, 0.0,
+     0.5, -0.5, 0.0,
+    -0.5, -0.5, 0.0,
+    -0.5,  0.5, 0.0,
 ];
 const INDICES: [u32; 6] = [
     0, 1, 2, 2, 0, 3
 ];
+const UVS: [f32; 8] = [
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0
+];
 
 pub struct Renderer {
     frames: u128,
-    vao: VAO,
-    vbo: VBO,
-    ebo: EBO,
-    program: ShaderProgram,
-    texture: Texture
+    models: Vec<Model>
 }
 
 impl Renderer {
     pub fn init() -> Renderer {
-        let vao = VAO::init();
-        vao.bind();
+        let shader = ShaderProgram::quick_load("/default");
+        let mut model = Model::create(shader);
 
-        let vbo = VBO::init();
-        vbo.put_data(&VERTS.to_vec(), STATIC_DRAW);
+        let texture = Texture::load("/ayame", REPEAT, LINEAR_MIPMAP_LINEAR);
+        model.set_texture(texture);
 
-        let ebo = EBO::init();
-        ebo.put_data(&INDICES.to_vec(), STATIC_DRAW);
-
-        let mut program = ShaderProgram::quick_load("/default");
-
-        let pos_attr = ShaderAttribute {
-            name: "aPos".to_string(),
-            type_: FLOAT,
-            size: 3,
-            normalized: false,
+        let mesh = Mesh {
+            verteces: VERTS.to_vec(),
+            indeces: INDICES.to_vec(),
+            uvs: UVS.to_vec()
         };
-        let col_attr = ShaderAttribute {
-            name: "aCol".to_string(),
-            type_: FLOAT,
-            size: 4,
-            normalized: false,
-        };
-        let uv_attr = ShaderAttribute {
-            name: "aUV".to_string(),
-            type_: FLOAT,
-            size: 2,
-            normalized: false,
-        };
+        model.set_mesh(mesh);
 
-        program.add_shader_attribute(pos_attr);
-        program.add_shader_attribute(col_attr);
-        program.add_shader_attribute(uv_attr);
-        program.bind_frag_data_location("FragColor".to_string());
-
-        let texture = Texture::load("/ayame", REPEAT, LINEAR);
+        let mut models: Vec<Model> = Vec::new();
+        models.push(model);
 
         Renderer {
             frames: 0,
-            vao,
-            vbo,
-            ebo,
-            program,
-            texture
+            models
         }
     }
 
     pub fn render(&mut self) {
         unsafe {
-            let time = SDL_GetTicks() as f32 / 1000 as f32;
-            //println!("{time}");
-
-            let (r, g, b, a) = tsu::hex_to_floats(0xaaaaaaaa);
+            let (r, g, b, a) = tsu::hex_to_floats(0x00000000);
             ClearColor(r, g, b, a);
             Clear(COLOR_BUFFER_BIT);
 
-            let time_loc = self.program.get_uniform_location("time".to_string());
-
-            self.program.use_program();
-            self.program.apply_shader_attributes();
-            self.texture.bind();
-            self.vao.bind();
-
-            Uniform1f(time_loc, time);
-
-            DrawElements(TRIANGLES, INDICES.len() as i32, UNSIGNED_INT, 0 as *const c_void);
+            for m in &mut self.models {
+                let p = glm::vec3(0.0, 0.2, 0.0) * Engine::get_time().sin();
+                m.set_position(p);
+                m.draw();
+            }
 
             self.frames += 1;
         }
-    }
-}
-
-pub fn print_err() {
-    unsafe {
-        let err = GetError();
-        println!("err: {:?}", err);
     }
 }

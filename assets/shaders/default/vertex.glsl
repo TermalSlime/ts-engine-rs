@@ -6,9 +6,11 @@ layout (location = 2) in vec2 aUV;
 out vec4 vCol;
 out vec2 uv;
 
+uniform mat4 transform;
+
 void main()
 {
-gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-vCol = aCol;
-uv = aUV;
+    gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    vCol = aCol;
+    uv = aUV;
 }

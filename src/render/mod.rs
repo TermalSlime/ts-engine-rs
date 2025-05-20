@@ -1,4 +1,5 @@
 pub mod render;
 mod shaders;
 mod buffers;
-mod textures;
+mod texture;
+mod model;

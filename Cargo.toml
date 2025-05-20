@@ -5,5 +5,6 @@ edition = "2021"
 
 [dependencies]
 gl = "0.14.0"
+nalgebra-glm = "0.19.0"
 sdl3 = { version = "0", features = [] }
 stb_image_rust = "2.27.2"

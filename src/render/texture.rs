@@ -55,11 +55,12 @@ impl Texture {
                 0,
                 RGBA,
                 UNSIGNED_BYTE,
-                img as *const _);
+                img as *const _
+            );
 
             GenerateMipmap(TEXTURE_2D);
 
-            //stbi_image_free(img);
+            stbi_image_free(img);
 
             Texture { ptr }
         }
@@ -74,7 +75,9 @@ impl Texture {
 impl Drop for Texture {
     fn drop(&mut self) {
         unsafe {
-            DeleteTextures(1, [self.ptr].as_ptr());
+            if self.ptr != 0 {
+                DeleteTextures(1, [self.ptr].as_ptr());
+            }
         }
     }
 }

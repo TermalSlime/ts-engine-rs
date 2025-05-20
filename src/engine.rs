@@ -4,6 +4,7 @@ use sdl3::keyboard::Keycode;
 use sdl3::video::{GLContext, GLProfile, Window};
 use sdl3::Sdl;
 use sdl3::VideoSubsystem;
+use sdl3::sys::timer::SDL_GetTicks;
 
 extern crate sdl3;
 
@@ -58,7 +59,7 @@ impl Engine {
 
     fn create_window(video_subsistem: &VideoSubsystem) -> Window {
         let window = video_subsistem
-            .window("title", 800, 600)
+            .window("ts-engine-rs", 800, 600)
             .opengl()
             .position_centered()
             .build()
@@ -75,5 +76,9 @@ impl Engine {
 
         let render_context = window.gl_create_context().unwrap();
         render_context
+    }
+
+    pub fn get_time() -> f32 {
+        unsafe { SDL_GetTicks() as f32 / 1000 as f32 }
     }
 }

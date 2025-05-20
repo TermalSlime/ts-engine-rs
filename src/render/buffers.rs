@@ -23,6 +23,11 @@ impl VBO {
             VBO { ptr }
         }
     }
+    pub fn create_empty() -> VBO {
+        VBO {
+            ptr: 0
+        }
+    }
     pub fn bind(&self) {
         unsafe {
             BindBuffer(ARRAY_BUFFER, self.ptr);
@@ -44,7 +49,9 @@ impl VBO {
 impl Drop for VBO {
     fn drop(&mut self) {
         unsafe {
-            DeleteBuffers(1, [self.ptr].as_ptr());
+            if self.ptr != 0 {
+                DeleteBuffers(1, [self.ptr].as_ptr());
+            }
         }
     }
 }
@@ -57,6 +64,11 @@ impl VAO {
             VAO { ptr }
         }
     }
+    pub fn create_empty() -> VAO {
+        VAO {
+            ptr: 0
+        }
+    }
     pub fn bind(&self) {
         unsafe {
             BindVertexArray(self.ptr);
@@ -67,7 +79,9 @@ impl VAO {
 impl Drop for VAO {
     fn drop(&mut self) {
         unsafe {
-            DeleteVertexArrays(1, [self.ptr].as_ptr());
+            if self.ptr != 0 {
+                DeleteVertexArrays(1, [self.ptr].as_ptr());
+            }
         }
     }
 }
@@ -78,6 +92,11 @@ impl EBO {
             let mut ptr = 0;
             GenBuffers(1, &mut ptr);
             EBO { ptr }
+        }
+    }
+    pub fn create_empty() -> EBO {
+        EBO {
+            ptr: 0
         }
     }
     pub fn bind(&self) {
@@ -101,7 +120,9 @@ impl EBO {
 impl Drop for EBO {
     fn drop(&mut self) {
         unsafe {
-            DeleteBuffers(1, [self.ptr].as_ptr());
+            if self.ptr != 0 {
+                DeleteBuffers(1, [self.ptr].as_ptr());
+            }
         }
     }
 }
